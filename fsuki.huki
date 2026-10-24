@@ -1,0 +1,94 @@
+// ==================================================================
+// fsuki.huki — Sistema de archivos para Itsuki
+// v1.0.0 — Multiplataforma (Windows / Linux)
+//
+// Metadatos, directorios, archivos, entorno y utilidades de rutas.
+// Lectura/escritura de contenido: usar file_read_all, file_write_all
+// y file_append de fundamental.huki.
+// ==================================================================
+
+#pragma once
+
+// ------------------------------------------------------------------
+// 1. Metadatos
+// ------------------------------------------------------------------
+
+// 1 si la ruta existe (archivo o directorio), 0 si no.
+extern fn fs_exists(path: char*) -> int;
+
+// 1 si existe y es archivo regular, 0 si no.
+extern fn fs_is_file(path: char*) -> int;
+
+// Tamanio del archivo en bytes, o -1 si no existe.
+extern fn fs_size(path: char*) -> int;
+
+// ------------------------------------------------------------------
+// 2. Directorios
+// ------------------------------------------------------------------
+
+// Crea UN directorio (el padre debe existir). 0 ok, -1 error.
+extern fn fs_mkdir(path: char*) -> int;
+
+// Crea la ruta completa, creando cada nivel que falte (mkdir -p).
+// Los niveles existentes se ignoran. Solo separador '/'.
+// 0 ok, -1 error.
+extern fn fs_mkdirs(path: char*) -> int;
+
+// Elimina un directorio VACIO. 0 ok, -1 error (no existe o no vacio).
+extern fn fs_rmdir(path: char*) -> int;
+
+// Lista un directorio: escribe los nombres separados por '\n'.
+// Ignora "." y "..". buf necesita espacio para todo el listado.
+// Retorna la cantidad de entradas, -1 error, -2 buffer chico.
+extern fn fs_list(path: char*, buf: char*, buf_len: int) -> int;
+
+// Cantidad de entradas de un directorio (sin . y ..), o -1.
+extern fn fs_count(path: char*) -> int;
+
+// ------------------------------------------------------------------
+// 3. Archivos
+// ------------------------------------------------------------------
+
+// Copia un archivo binario completo. Retorna los bytes copiados,
+// -1 error de escritura, -2 el origen no existe.
+extern fn fs_copy(src: char*, dst: char*) -> int;
+
+// Crea el archivo si no existe (no toca el contenido). 0 ok, -1.
+extern fn fs_touch(path: char*) -> int;
+
+// Elimina un archivo. 0 ok, -1 error.
+extern fn fs_remove(path: char*) -> int;
+
+// Renombra o mueve un archivo/directorio. 0 ok, -1 error.
+extern fn fs_rename(old_path: char*, new_path: char*) -> int;
+
+// ------------------------------------------------------------------
+// 4. Entorno
+// ------------------------------------------------------------------
+
+// Escribe el directorio de trabajo actual en buf.
+// 0 ok, -1 error, -2 buffer chico.
+extern fn fs_cwd(buf: char*, buf_len: int) -> int;
+
+// Cambia el directorio de trabajo. 0 ok, -1 error.
+extern fn fs_chdir(path: char*) -> int;
+
+// ------------------------------------------------------------------
+// 5. Rutas
+// ------------------------------------------------------------------
+
+// Une dos rutas con '/' evitando separadores dobles.
+// 0 ok, -1 datos invalidos, -2 buffer chico.
+extern fn fs_join(a: char*, b: char*, out: char*, out_len: int) -> int;
+
+// Nombre final de la ruta: "a/b.txt" -> "b.txt".
+// 0 ok, -2 buffer chico.
+extern fn fs_basename(path: char*, out: char*, out_len: int) -> int;
+
+// Parte del directorio: "a/b.txt" -> "a" (o "." si no hay separador).
+// 0 ok, -2 buffer chico.
+extern fn fs_dirname(path: char*, out: char*, out_len: int) -> int;
+
+// Extension SIN punto de la parte final: "a/datos.tar.gz" -> "gz".
+// Retorna 1 si habia extension, 0 si no, -2 buffer chico.
+extern fn fs_ext(path: char*, out: char*, out_len: int) -> int;
