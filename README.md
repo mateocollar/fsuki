@@ -25,7 +25,7 @@ Librería de sistema de archivos simple y multiplataforma para [itsuki-lang](htt
 ## Características
 
 - **Multiplataforma:** mismo código fuente para Windows y Linux.
-- **Directorios anidados:** `fs_mkdirs()` crea toda la ruta de una (`mkdir -p`).
+- **Directorios anidados y borrado recursivo:** `fs_mkdirs()` crea toda la ruta (`mkdir -p`) y `fs_rmdir_all()` / `fs_remove_all()` elimina árboles completos (`rm -rf`).
 - **Listado de directorios:** `fs_list()` y `fs_count()` sin `.` ni `..`.
 - **Archivos:** copia binaria, `touch`, eliminación y renombrado.
 - **Utilidades de rutas:** `fs_join`, `fs_basename`, `fs_dirname`, `fs_ext`.
@@ -115,6 +115,7 @@ itsuki run main.suki
 | `fs_mkdir(path)` | Crea un directorio (el padre debe existir). |
 | `fs_mkdirs(path)` | Crea la ruta completa (`mkdir -p`); ignora niveles existentes. |
 | `fs_rmdir(path)` | Elimina un directorio vacío. |
+| `fs_rmdir_all(path)` | Elimina un directorio y todo su contenido recursivamente (`rm -rf`). |
 | `fs_list(path, buf, len)` | Nombres separados por `\n`. Retorna cantidad, -1 error, -2 buffer chico. |
 | `fs_count(path)` | Cantidad de entradas, o -1. |
 
@@ -125,6 +126,7 @@ itsuki run main.suki
 | `fs_copy(src, dst)` | Copia binaria. Retorna bytes copiados, -1 error, -2 origen inexistente. |
 | `fs_touch(path)` | Crea el archivo si no existe (no toca contenido). |
 | `fs_remove(path)` | Elimina un archivo. |
+| `fs_remove_all(path)` | Elimina un archivo o directorio y su contenido recursivamente. |
 | `fs_rename(old, new)` | Renombra o mueve archivo/directorio. |
 
 ### Entorno
