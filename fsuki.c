@@ -30,6 +30,8 @@ int
 fs_exists(const char *path)
 {
 	struct stat st;
+	if(path == NULL)
+		return 0;
 	return (stat(path, &st) == 0) ? 1 : 0;
 }
 
@@ -37,6 +39,8 @@ int
 fs_is_file(const char *path)
 {
 	struct stat st;
+	if(path == NULL)
+		return 0;
 	return (stat(path, &st) == 0 && S_ISREG(st.st_mode)) ? 1 : 0;
 }
 
@@ -45,6 +49,8 @@ fs_size(const char *path)
 {
 	// https://pubs.opengroup.org/onlinepubs/9699919799/
 	struct stat st;
+	if(path == NULL)
+		return -1;
 	if(stat(path, &st) != 0)
 		return -1;
 	return (int)st.st_size;
@@ -55,6 +61,8 @@ fs_size(const char *path)
 int
 fs_mkdir(const char *path)
 {
+	if(path == NULL)
+		return -1;
 	if(FS_MKDIR(path) != 0)
 		return -1;
 	return 0;
@@ -92,9 +100,106 @@ fs_mkdirs(const char *path)
 int
 fs_rmdir(const char *path)
 {
+	if(path == NULL)
+		return -1;
 	if(FS_RMDIR(path) != 0)
 		return -1;
 	return 0;
+}
+
+int
+fs_remove_all(const char *path)
+{
+	struct stat st;
+
+	if(path == NULL || path[0] == '\0')
+		return -1;
+
+	if(stat(path, &st) != 0)
+		return -1;
+
+	if(!(st.st_mode & S_IFDIR)){
+#ifdef _WIN32
+		SetFileAttributesA(path, FILE_ATTRIBUTE_NORMAL);
+#endif
+		return (remove(path) == 0) ? 0 : -1;
+	}
+
+#ifdef _WIN32
+	{
+		WIN32_FIND_DATAA fd;
+		HANDLE h;
+		char pattern[1024];
+		char subpath[1024];
+		int plen = (int)strlen(path);
+
+		if(plen + 4 >= (int)sizeof(pattern))
+			return -1;
+
+		sprintf(pattern, "%s/*", path);
+		h = FindFirstFileA(pattern, &fd);
+		if(h != INVALID_HANDLE_VALUE){
+			do{
+				const char *name = fd.cFileName;
+				if(strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+					continue;
+				if(plen + 1 + (int)strlen(name) >= (int)sizeof(subpath)){
+					FindClose(h);
+					return -1;
+				}
+				sprintf(subpath, "%s/%s", path, name);
+				if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
+					if(fs_remove_all(subpath) != 0){
+						FindClose(h);
+						return -1;
+					}
+				} else {
+					if(fd.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
+						SetFileAttributesA(subpath, FILE_ATTRIBUTE_NORMAL);
+					if(remove(subpath) != 0){
+						FindClose(h);
+						return -1;
+					}
+				}
+			}while(FindNextFileA(h, &fd));
+			FindClose(h);
+		}
+		SetFileAttributesA(path, FILE_ATTRIBUTE_NORMAL);
+		return (FS_RMDIR(path) == 0) ? 0 : -1;
+	}
+#else
+	{
+		DIR *d = opendir(path);
+		struct dirent *e;
+		char subpath[1024];
+		int plen = (int)strlen(path);
+
+		if(d == NULL)
+			return -1;
+
+		while((e = readdir(d)) != NULL){
+			if(strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0)
+				continue;
+			if(plen + 1 + (int)strlen(e->d_name) >= (int)sizeof(subpath)){
+				closedir(d);
+				return -1;
+			}
+			sprintf(subpath, "%s/%s", path, e->d_name);
+			if(fs_remove_all(subpath) != 0){
+				closedir(d);
+				return -1;
+			}
+		}
+		closedir(d);
+		return (FS_RMDIR(path) == 0) ? 0 : -1;
+	}
+#endif
+}
+
+int
+fs_rmdir_all(const char *path)
+{
+	return fs_remove_all(path);
 }
 
 int
@@ -166,6 +271,8 @@ int
 fs_count(const char *path)
 {
 	char tmp[8192];
+	if(path == NULL)
+		return -1;
 	return fs_list(path, tmp, (int)sizeof(tmp));
 }
 
@@ -177,6 +284,11 @@ fs_copy(const char *src, const char *dst)
 	FILE *in, *out;
 	char buf[8192];
 	int total = 0, n;
+
+	if(src == NULL || dst == NULL)
+		return -1;
+	if(strcmp(src, dst) == 0)
+		return -1;
 
 	in = fopen(src, "rb");
 	if(in == NULL)
@@ -203,7 +315,10 @@ fs_copy(const char *src, const char *dst)
 int
 fs_touch(const char *path)
 {
-	FILE *f = fopen(path, "ab");
+	FILE *f;
+	if(path == NULL)
+		return -1;
+	f = fopen(path, "ab");
 	if(f == NULL)
 		return -1;
 	fclose(f);
@@ -213,6 +328,8 @@ fs_touch(const char *path)
 int
 fs_remove(const char *path)
 {
+	if(path == NULL)
+		return -1;
 	if(remove(path) != 0)
 		return -1;
 	return 0;
@@ -221,6 +338,8 @@ fs_remove(const char *path)
 int
 fs_rename(const char *old_path, const char *new_path)
 {
+	if(old_path == NULL || new_path == NULL)
+		return -1;
 	if(rename(old_path, new_path) != 0)
 		return -1;
 	return 0;
@@ -231,6 +350,8 @@ fs_rename(const char *old_path, const char *new_path)
 int
 fs_cwd(char *buf, int buf_len)
 {
+	if(buf == NULL || buf_len <= 0)
+		return -1;
 	if(FS_GETCWD(buf, buf_len) == NULL)
 		return (errno == ERANGE) ? -2 : -1;
 	return 0;
@@ -239,6 +360,8 @@ fs_cwd(char *buf, int buf_len)
 int
 fs_chdir(const char *path)
 {
+	if(path == NULL)
+		return -1;
 	if(FS_CHDIR(path) != 0)
 		return -1;
 	return 0;

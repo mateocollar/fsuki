@@ -4,8 +4,9 @@
 ### Añadido
 - **Compatibilidad multiplataforma**: mismo código fuente compila en Windows y Linux, sin librerías externas.
 - **Metadatos**: `fs_exists()`, `fs_is_file()`, `fs_size()`.
-- **Directorios**: `fs_mkdir()`, `fs_mkdirs()` (creación anidada estilo `mkdir -p`), `fs_rmdir()`, `fs_list()` (nombres separados por `\n`, sin `.` ni `..`) y `fs_count()`.
-- **Archivos**: `fs_copy()` (copia binaria con retorno de bytes), `fs_touch()`, `fs_remove()`, `fs_rename()`.
+- **Directorios**: `fs_mkdir()`, `fs_mkdirs()` (creación anidada estilo `mkdir -p`), `fs_rmdir()`, `fs_rmdir_all()` (borrado recursivo estilo `rm -rf`), `fs_list()` (nombres separados por `\n`, sin `.` ni `..`) y `fs_count()`.
+- **Archivos**: `fs_copy()` (copia binaria con retorno de bytes), `fs_touch()`, `fs_remove()`, `fs_remove_all()` (borrado recursivo de archivo o directorio), `fs_rename()`.
+- **Robustez y seguridad**: validación exhaustiva de punteros nulos (`NULL`) en todas las funciones públicas de `fsuki.c` para prevenir fallos por desreferenciación nula.
 - **Entorno**: `fs_cwd()` y `fs_chdir()`.
 - **Utilidades de rutas**: `fs_join()`, `fs_basename()`, `fs_dirname()`, `fs_ext()` — todas con separador `/` (aceptado por Windows).
 - **Documentación completa** de cada función en `fsuki.huki`, con códigos de error por función.

@@ -37,6 +37,10 @@ extern fn fs_mkdirs(path: char*) -> int;
 // Elimina un directorio VACIO. 0 ok, -1 error (no existe o no vacio).
 extern fn fs_rmdir(path: char*) -> int;
 
+// Elimina un directorio y todo su contenido recursivamente (rm -rf).
+// 0 ok, -1 error.
+extern fn fs_rmdir_all(path: char*) -> int;
+
 // Lista un directorio: escribe los nombres separados por '\n'.
 // Ignora "." y "..". buf necesita espacio para todo el listado.
 // Retorna la cantidad de entradas, -1 error, -2 buffer chico.
@@ -58,6 +62,10 @@ extern fn fs_touch(path: char*) -> int;
 
 // Elimina un archivo. 0 ok, -1 error.
 extern fn fs_remove(path: char*) -> int;
+
+// Elimina un archivo o directorio y su contenido recursivamente.
+// 0 ok, -1 error.
+extern fn fs_remove_all(path: char*) -> int;
 
 // Renombra o mueve un archivo/directorio. 0 ok, -1 error.
 extern fn fs_rename(old_path: char*, new_path: char*) -> int;
